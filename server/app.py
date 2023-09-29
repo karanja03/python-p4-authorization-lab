@@ -85,15 +85,19 @@ class CheckSession(Resource):
         return {}, 401
 
 class MemberOnlyIndex(Resource):
-    
-    def get(self):
-        pass
+@app.before_request
+def check_if_logged_in:
+    if not session['user_id'] \
+        and request.endpoint != 'document_list' :
+        return {'error': 'Unauthorized'}, 401
 
-class MemberOnlyArticle(Resource):
-    
+class Document(Resource):
     def get(self, id):
-        pass
 
+        document = Document.query.filter(Document.id == id).first()
+        return document.to_dict()
+
+    def patch(self, id):
 api.add_resource(ClearSession, '/clear', endpoint='clear')
 api.add_resource(IndexArticle, '/articles', endpoint='article_list')
 api.add_resource(ShowArticle, '/articles/<int:id>', endpoint='show_article')
